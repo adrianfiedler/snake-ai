@@ -16,7 +16,8 @@ class Snake {
       this.brain = brain;
     } else {
       const options = {
-        inputs: [
+        inputs: 12,
+        /*[
           "food_left",
           "food_right",
           "food_top",
@@ -29,7 +30,7 @@ class Snake {
           "move_right",
           "move_top",
           "move_bottom",
-        ],
+        ],*/
         outputs: ["left", "right", "up", "down"],
         debug: true,
         task: "classification",
@@ -139,8 +140,16 @@ class Snake {
     const results = this.brain.classifySync(inputs);
     // console.log(results);
     let index = this.checkLastMoves(results[0].label) ? 1 : 0;
-    index = this.checkLastMoves(results[1].label) ? 2 : 1;
-    index = this.checkLastMoves(results[2].label) ? 3 : 2;
+    if (index == 1) {
+      index = this.checkLastMoves(results[1].label) ? 2 : 1;
+      if (index == 2) {
+        index = this.checkLastMoves(results[2].label) ? 3 : 2;
+        if (index == 3) {
+          index = this.checkLastMoves(results[2].label) ? Math.round(Math.random()*3) : 2;
+        }
+      }
+    }
+
     if (results[index].label === "left") {
       this.moveX = -1;
       this.moveY = 0;
@@ -155,8 +164,9 @@ class Snake {
       this.moveY = 1;
     }
     this.lastMoves.unshift(results[index].label);
-    if (this.lastMoves.length > 2) {
-      this.lastMoves = this.lastMoves.slice(0, 3);
+    const MOVE_HISTORY = 4;
+    if (this.lastMoves.length > MOVE_HISTORY) {
+      this.lastMoves = this.lastMoves.slice(0, MOVE_HISTORY + 1);
     }
   }
 

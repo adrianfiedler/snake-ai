@@ -22,6 +22,7 @@ function nextGeneration() {
   // Clear the array
   savedSnakes = [];
   spawnFood();
+  generation++;
 }
 
 // Create a child snake from two parents

@@ -9,6 +9,12 @@ let savedSnakes = [];
 let counter = 0;
 let foods = [];
 const TOTAL = 50;
+let generation = 1;
+let loaded = false;
+
+function preload() {
+
+}
 
 function setup() {
   createCanvas(400, 400);
@@ -16,28 +22,37 @@ function setup() {
   ml5.tf.setBackend("cpu");
   // frameRate(6);
   spawnFood();
-  for (let i = 0; i < TOTAL; i++) {
-    snakes.push(new Snake());
-  }
+
+  let snake = new Snake();
+  // snake.brain.load('snakeModel.json').then(res => {
+    for (let i = 0; i < TOTAL; i++) {
+      snakes.push(new Snake());
+    }
+    loaded = true;
+ // });
 }
 
 function draw() {
-  updateSnakes();
-  // No survivors go to the next generation
-  if (snakes.length === 0) {
-    counter = 0;
-    nextGeneration();
+  if(loaded) {
+    updateSnakes();
+    // No survivors go to the next generation
+    if (snakes.length === 0) {
+      counter = 0;
+      nextGeneration();
+    }
+  
+    // drawing
+    background(220);
+    drawGrid();
+    drawFood();
+    drawSnakes();
+    fill(0, 0, 0);
+    textSize(25);
+    text("Gen: " + generation, 0, 20);
+    console.log("Alive: " + snakes.length + ", Dead: " + savedSnakes.length);
+  } else {
+    text("Loading model", 0, 20);
   }
-
-  // drawing
-  background(220);
-  drawGrid();
-  drawFood();
-  drawSnakes();
-  fill(0, 0, 0);
-  textSize(25);
-  text("Counter: " + counter, 0, 20);
-  console.log("Alive: " + snakes.length + ", Dead: " + savedSnakes.length);
 }
 
 function keyPressed() {
@@ -53,6 +68,8 @@ function keyPressed() {
   } else if (keyCode === DOWN_ARROW) {
     snakes[0].moveY = 1;
     snakes[0].moveX = 0;
+  } else if (key === 'e') {
+    snakes[0].brain.save('snakeModel');
   }
 }
 
@@ -83,7 +100,7 @@ function drawFood() {
 function updateSnakes() {
   for (let i = 0; i < snakes.length; i++) {
     let snake = snakes[i];
-    if (false || snake.offScreen() || snake.hitsItself()) {
+    if (snake.offScreen() /*|| snake.hitsItself()*/) {
       // save snake and remove
       savedSnakes.push(snakes.splice(i, 1)[0]);
     } else {
@@ -111,4 +128,8 @@ function reset() {
     x: floor(width / cellSize / 2),
     y: floor(width / cellSize / 2),
   });
+}
+
+function modelReady() {
+  console.log('Model is ready!!');
 }
