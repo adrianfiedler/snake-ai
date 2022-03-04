@@ -13,6 +13,7 @@ const FOOD_START_AMOUNT = 50;
 const FOOD_SPAWN_RATE = 50; // spawn one food every X frames
 let generation = 1;
 let loaded = false;
+let highscore = 0;
 
 function preload() {}
 
@@ -50,6 +51,7 @@ function draw() {
     fill(0, 0, 0);
     textSize(25);
     text("Gen: " + generation, 0, 20);
+    text("Highscore: " + highscore, 200, 20);
     console.log("Alive: " + snakes.length + ", Dead: " + savedSnakes.length);
   } else {
     text("Loading model", 0, 20);

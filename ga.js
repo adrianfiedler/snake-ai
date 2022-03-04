@@ -51,6 +51,9 @@ function pickOne() {
 function calculateFitness() {
   let sum = 0;
   for (const snake of savedSnakes) {
+    if(snake.score > highscore) {
+      highscore = snake.score;
+    }
     sum += snake.score;
   }
   for (const snake of savedSnakes) {
