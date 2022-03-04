@@ -29,30 +29,36 @@ function setup() {
   for (let i = 0; i < TOTAL; i++) {
     snakes.push(new Snake());
   }
+  // Slider for speeding up simulation
+  slider = createSlider(1, 10, 1);
+  slider.position(10, 420);
   loaded = true;
   // });
 }
 
 function draw() {
   if (loaded) {
-    updateSnakes();
-    // No survivors go to the next generation
-    if (snakes.length === 0) {
-      counter = 0;
-      nextGeneration();
-    }
-    spawnSingleFood();
+    // Speed up simulation
+    for (let n = 0; n < slider.value(); n += 1) {
+      updateSnakes();
+      // No survivors go to the next generation
+      if (snakes.length === 0) {
+        counter = 0;
+        nextGeneration();
+      }
+      spawnSingleFood();
 
-    // drawing
-    background(220);
-    drawGrid();
-    drawFood();
-    drawSnakes();
-    fill(0, 0, 0);
-    textSize(25);
-    text("Gen: " + generation, 0, 20);
-    text("Highscore: " + highscore, 200, 20);
-    console.log("Alive: " + snakes.length + ", Dead: " + savedSnakes.length);
+      // drawing
+      background(220);
+      drawGrid();
+      drawFood();
+      drawSnakes();
+      fill(0, 0, 0);
+      textSize(25);
+      text("Gen: " + generation, 0, 20);
+      text("Highscore: " + highscore, 200, 20);
+      // console.log("Alive: " + snakes.length + ", Dead: " + savedSnakes.length);
+    }
   } else {
     text("Loading model", 0, 20);
   }
