@@ -21,7 +21,7 @@ class Snake {
       this.brain = brain;
     } else {
       const options = {
-        inputs: 12,
+        inputs: 14,
         /*[
           "food_left",
           "food_right",
@@ -35,6 +35,8 @@ class Snake {
           "move_right",
           "move_top",
           "move_bottom",
+          "closest_food_x",
+          "closest_food_y"
         ],*/
         outputs: ["left", "right", "up", "down"],
         debug: true,
@@ -148,6 +150,9 @@ class Snake {
     inputs[10] = this.moveY == -1 ? 1 : 0;
     // move bottom?
     inputs[11] = this.moveY == 1 ? 1 : 0;
+    let closestFood = this.getClosestFood();
+    inputs[12] = closestFood.x;
+    inputs[13] = closestFood.y;
     const results = this.brain.classifySync(inputs);
     // console.log(results);
     let index = this.checkLastMoves(results[0].label) ? 1 : 0;
@@ -237,5 +242,19 @@ class Snake {
       }
     }
     return false;
+  }
+
+  getClosestFood() {
+    let minDist = Infinity;
+    let closest;
+    for(let i = 0; i < foods.length; i++) {
+      let food = foods[i];
+      let currDist = dist(this.tail[0].x, this.tail[0].y, food.x, food.y);
+      if(currDist < minDist) {
+        minDist = currDist;
+        closest = food;
+      }
+    }
+    return closest;
   }
 }
