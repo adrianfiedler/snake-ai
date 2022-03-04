@@ -9,12 +9,12 @@ let savedSnakes = [];
 let counter = 0;
 let foods = [];
 const TOTAL = 50;
+const FOOD_START_AMOUNT = 50;
+const FOOD_SPAWN_RATE = 50; // spawn one food every X frames
 let generation = 1;
 let loaded = false;
 
-function preload() {
-
-}
+function preload() {}
 
 function setup() {
   createCanvas(400, 400);
@@ -25,22 +25,23 @@ function setup() {
 
   let snake = new Snake();
   // snake.brain.load('snakeModel.json').then(res => {
-    for (let i = 0; i < TOTAL; i++) {
-      snakes.push(new Snake());
-    }
-    loaded = true;
- // });
+  for (let i = 0; i < TOTAL; i++) {
+    snakes.push(new Snake());
+  }
+  loaded = true;
+  // });
 }
 
 function draw() {
-  if(loaded) {
+  if (loaded) {
     updateSnakes();
     // No survivors go to the next generation
     if (snakes.length === 0) {
       counter = 0;
       nextGeneration();
     }
-  
+    spawnSingleFood();
+
     // drawing
     background(220);
     drawGrid();
@@ -68,8 +69,8 @@ function keyPressed() {
   } else if (keyCode === DOWN_ARROW) {
     snakes[0].moveY = 1;
     snakes[0].moveX = 0;
-  } else if (key === 'e') {
-    snakes[0].brain.save('snakeModel');
+  } else if (key === "e") {
+    snakes[0].brain.save("snakeModel");
   }
 }
 
@@ -100,7 +101,7 @@ function drawFood() {
 function updateSnakes() {
   for (let i = 0; i < snakes.length; i++) {
     let snake = snakes[i];
-    if (snake.offScreen() /*|| snake.hitsItself()*/) {
+    if (snake.offScreen() || snake.checkHeadAndTailCollision()) {
       // save snake and remove
       savedSnakes.push(snakes.splice(i, 1)[0]);
     } else {
@@ -111,7 +112,17 @@ function updateSnakes() {
 }
 
 function spawnFood() {
-  for (let i = 0; i < TOTAL; i++) {
+  foods = [];
+  for (let i = 0; i < FOOD_START_AMOUNT; i++) {
+    foods.push({
+      x: floor(random(width) / cellSize),
+      y: floor(random(width) / cellSize),
+    });
+  }
+}
+
+function spawnSingleFood() {
+  if (frameCount % FOOD_SPAWN_RATE == 0) {
     foods.push({
       x: floor(random(width) / cellSize),
       y: floor(random(width) / cellSize),
@@ -131,5 +142,5 @@ function reset() {
 }
 
 function modelReady() {
-  console.log('Model is ready!!');
+  console.log("Model is ready!!");
 }
