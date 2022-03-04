@@ -25,15 +25,23 @@ function setup() {
   spawnFood();
 
   let snake = new Snake();
-  // snake.brain.load('snakeModel.json').then(res => {
-  for (let i = 0; i < TOTAL; i++) {
-    snakes.push(new Snake());
-  }
+  const modelDetails = {
+    model: "model/model.json",
+    metadata: "model/model_meta.json",
+    weights: "model/model.weights.bin",
+  };
+  snake.brain.load(modelDetails).then((res) => {
+    console.log('Model loaded');
+    for (let i = 0; i < TOTAL; i++) {
+      snakes.push(new Snake(snake.brain.copy()));
+    }
+    loaded = true;
+  })
+  .catch(error => console.error(error));
+  
   // Slider for speeding up simulation
   slider = createSlider(1, 10, 1);
   slider.position(10, 420);
-  loaded = true;
-  // });
 }
 
 function draw() {
@@ -78,7 +86,7 @@ function keyPressed() {
     snakes[0].moveY = 1;
     snakes[0].moveX = 0;
   } else if (key === "e") {
-    snakes[0].brain.save("snakeModel");
+    snakes[0].brain.save();
   }
 }
 
