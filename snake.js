@@ -67,7 +67,7 @@ class Snake {
       if (this.tail[0].x == food.x && this.tail[0].y == food.y) {
         this.size++;
         foods.splice(i, 1);
-        this.score += 100;
+        this.score += 250;
       }
     }
     this.tail.unshift({
@@ -151,8 +151,9 @@ class Snake {
     // move bottom?
     inputs[11] = this.moveY == 1 ? 1 : 0;
     let closestFood = this.getClosestFood();
-    inputs[12] = closestFood.x;
-    inputs[13] = closestFood.y;
+    inputs[12] = map(closestFood.x, 0, floor(width/cellSize), 0, 1);
+    inputs[13] = map(closestFood.y, 0, floor(width/cellSize), 0, 1);
+    // console.log(inputs);
     const results = this.brain.classifySync(inputs);
     // console.log(results);
     let index = this.checkLastMoves(results[0].label) ? 1 : 0;
