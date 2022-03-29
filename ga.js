@@ -16,7 +16,7 @@ function nextGeneration() {
   }
 
   // Release all the memory
-  for (let i = 0; i < TOTAL; i += 1) {
+  for (let i = 0; i < savedSnakes.length; i ++) {
     savedSnakes[i].brain.dispose();
   }
   // Clear the array
@@ -50,12 +50,15 @@ function pickOne() {
 // Normalize all fitness values
 function calculateFitness() {
   let sum = 0;
+  let currGenHighscore = 0;
   for (const snake of savedSnakes) {
     if(snake.score > highscore) {
       highscore = snake.score;
     }
+    currGenHighscore = max(currGenHighscore, snake.score);
     sum += snake.score;
   }
+  console.log('Last generation highscore: ' + currGenHighscore);
   for (const snake of savedSnakes) {
     snake.fitness = snake.score / sum;
   }

@@ -8,12 +8,13 @@ let snakes = [];
 let savedSnakes = [];
 let counter = 0;
 let foods = [];
-const TOTAL = 50;
-const FOOD_START_AMOUNT = 50;
-const FOOD_SPAWN_RATE = 50; // spawn one food every X frames
+const TOTAL = 150;
+const FOOD_START_AMOUNT = 3;
 let generation = 1;
 let loaded = false;
 let highscore = 0;
+let count = 0;
+const MAX_ROUND_FRAMES = 90;
 
 function preload() {}
 
@@ -30,17 +31,17 @@ function setup() {
     metadata: "model/model_meta.json",
     weights: "model/model.weights.bin",
   };
-  snake.brain.load(modelDetails).then((res) => {
-    console.log('Model loaded');
-    for (let i = 0; i < TOTAL; i++) {
-      snakes.push(new Snake(snake.brain.copy()));
-    }
-    loaded = true;
-  })
-  .catch(error => console.error(error));
-  
+  //snake.brain.load(modelDetails).then((res) => {
+  console.log("Model loaded");
+  for (let i = 0; i < TOTAL; i++) {
+    snakes.push(new Snake()); //snake.brain.copy()));
+  }
+  loaded = true;
+  //})
+  // .catch(error => console.error(error));
+
   // Slider for speeding up simulation
-  slider = createSlider(1, 10, 1);
+  slider = createSlider(1, MAX_ROUND_FRAMES, 1);
   slider.position(10, 420);
 }
 
@@ -48,6 +49,13 @@ function draw() {
   if (loaded) {
     // Speed up simulation
     for (let n = 0; n < slider.value(); n += 1) {
+      count++;
+      // Time exceeded
+      if (count >= MAX_ROUND_FRAMES) {
+        console.log('Time is up');
+        count = 0;
+        saveRemainingSnakes();
+      }
       updateSnakes();
       // No survivors go to the next generation
       if (snakes.length === 0) {
@@ -65,6 +73,7 @@ function draw() {
       textSize(25);
       text("Gen: " + generation, 0, 20);
       text("Highscore: " + highscore, 200, 20);
+      text("Frame: " + count, 0, 40);
       // console.log("Alive: " + snakes.length + ", Dead: " + savedSnakes.length);
     }
   } else {
@@ -127,6 +136,14 @@ function updateSnakes() {
   }
 }
 
+function saveRemainingSnakes() {
+  for (let i = 0; i < snakes.length; i++) {
+    // save snake and remove
+    savedSnakes.push(snakes[i]);
+    snakes = [];
+  }
+}
+
 function spawnFood() {
   foods = [];
   for (let i = 0; i < FOOD_START_AMOUNT; i++) {
@@ -138,7 +155,7 @@ function spawnFood() {
 }
 
 function spawnSingleFood() {
-  if (frameCount % FOOD_SPAWN_RATE == 0) {
+  while (foods.length < FOOD_START_AMOUNT) {
     foods.push({
       x: floor(random(width) / cellSize),
       y: floor(random(width) / cellSize),
