@@ -2,15 +2,17 @@ class Snake {
   constructor(brain) {
     this.size = 1;
     this.tail = [];
+    this.ate = false;
     this.tail.push({
       x: floor(width / cellSize / 2),
       y: floor(width / cellSize / 2),
     });
-    this.score = 0;
+    this.score = 2;
     this.fitness = 0;
     this.moveX = 1;
     this.moveY = 0;
     this.lastMoves = ["right"];
+    this.lastDist = 0;
     this.color = {
       r: Math.random() * 255,
       g: Math.random() * 255,
@@ -22,7 +24,7 @@ class Snake {
       this.brain = brain;
     } else {
       const options = {
-        inputs: 9,
+        inputs: 10,
         /*[
           "food_left",
           "food_right",
@@ -32,7 +34,8 @@ class Snake {
           "wall_right",
           "wall_top",
           "wall_bottom",
-          "closest_food_angle"
+          "closest_food_angle",
+          "closest_food_dist"
         ],*/
         outputs: ["left", "right", "up", "down"],
         debug: true,
@@ -40,13 +43,13 @@ class Snake {
         noTraining: true,
         layers: [
           {
-            type: 'dense',
-            units: 16,
-            activation: 'relu',
+            type: "dense",
+            units: 64,
+            activation: "relu",
           },
           {
-            type: 'dense',
-            activation: 'sigmoid',
+            type: "dense",
+            activation: "sigmoid",
           },
         ],
       };
@@ -69,18 +72,25 @@ class Snake {
   }
 
   update() {
-    this.score++;
     let food = this.food;
     if (this.tail[0].x == food.x && this.tail[0].y == food.y) {
       this.size++;
       this.food = this.spawnSingleFood();
-      this.score += 500;
+      this.score += 100;
+      this.ate = true;
     }
     this.tail.unshift({
       x: this.tail[0].x + this.moveX,
       y: this.tail[0].y + this.moveY,
     });
     this.tail = this.tail.slice(0, this.size);
+    let distFood = dist(this.tail[0].x, this.tail[0].y, food.x, food.y);
+    if (distFood < this.lastDist) {
+      this.score += 1;
+    } else {
+      this.score -= 1.5;
+    }
+    this.lastDist = distFood;
   }
 
   offScreen() {
@@ -105,11 +115,6 @@ class Snake {
       }
     }
     return false;
-  }
-
-  mutate() {
-    // 10% mutation rate
-    this.brain.mutate(0.1);
   }
 
   think() {
@@ -150,6 +155,11 @@ class Snake {
     let headV = createVector(this.moveX, this.moveY);
     let foodV = createVector(closestFood.x, closestFood.y);
     inputs[8] = this.getAngle(headV, foodV);
+    let distInput = 0;
+    if (this.lastDist != 0) {
+      distInput = 1 - this.lastDist / (width / cellSize);
+    }
+    inputs[9] = distInput;
     // this.printInputs(inputs);
     const results = this.brain.classifySync(inputs);
     // console.log(results);
@@ -262,7 +272,7 @@ class Snake {
     let vectToFood = createVector(this.food.x - head.x, this.food.y - head.y);
     let dir = createVector(this.moveX, this.moveY);
     // 1: in front, 0: behind
-    return 1 - abs(degrees(vectToFood.angleBetween(dir)) / 180);
+    return degrees(vectToFood.angleBetween(dir)) / 180;
   }
 
   spawnSingleFood() {

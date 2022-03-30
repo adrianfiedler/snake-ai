@@ -3,12 +3,13 @@ console.log("ml5 version:", ml5.version);
 let cellSize = 16;
 let snakes = [];
 let savedSnakes = [];
-const TOTAL = 150;
+const TOTAL = 100;
 let generation = 1;
 let loaded = false;
 let highscore = 0;
 let count = 0;
 const MAX_ROUND_FRAMES = 90;
+const MUTATION = 0.05;
 
 function preload() {}
 
@@ -33,7 +34,7 @@ function setup() {
   //})
   // .catch(error => console.error(error));
 
-  // frameRate(10);
+  // frameRate(1);
   // Slider for speeding up simulation
   slider = createSlider(1, MAX_ROUND_FRAMES, 1);
   slider.position(10, 420);
@@ -44,15 +45,10 @@ function draw() {
     // Speed up simulation
     for (let n = 0; n < slider.value(); n += 1) {
       count++;
-      // Time exceeded
-      if (count >= MAX_ROUND_FRAMES) {
-        console.log("Time is up");
-        count = 0;
-        saveRemainingSnakes();
-      }
       updateSnakes();
       // No survivors go to the next generation
       if (snakes.length === 0) {
+        count = 0;
         nextGeneration();
       }
 
@@ -102,29 +98,24 @@ function drawGrid() {
 }
 
 function drawSnakes() {
-  snakes.forEach((snake) => {
-    snake.show();
-  });
+  for(let i = 0; i < snakes.length; i++) {
+    if(i == 0) {
+      snakes[i].show();
+    }
+  }
 }
 
 function updateSnakes() {
   for (let i = 0; i < snakes.length; i++) {
     let snake = snakes[i];
-    if (snake.offScreen() || snake.checkHeadAndTailCollision()) {
+    if (snake.offScreen() || snake.checkHeadAndTailCollision() || snake.score < 0) {
       // save snake and remove
+      snake.score = max(0, snake.score-50);
       savedSnakes.push(snakes.splice(i, 1)[0]);
     } else {
       snake.think();
       snake.update();
     }
-  }
-}
-
-function saveRemainingSnakes() {
-  for (let i = 0; i < snakes.length; i++) {
-    // save snake and remove
-    savedSnakes.push(snakes[i]);
-    snakes = [];
   }
 }
 

@@ -120,8 +120,8 @@ function saveRemainingSnakes() {
   for (let i = 0; i < snakes.length; i++) {
     // save snake and remove
     savedSnakes.push(snakes[i]);
-    snakes = [];
   }
+  snakes = [];
 }
 
 function reset() {

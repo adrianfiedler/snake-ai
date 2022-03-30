@@ -29,7 +29,7 @@ function reproduce() {
   const brainA = pickOne();
   const brainB = pickOne();
   const childBrain = brainA.crossover(brainB);
-  childBrain.mutate(0.1);
+  childBrain.mutate(MUTATION);
   return new Snake(childBrain);
 }
 
