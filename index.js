@@ -1,15 +1,9 @@
 console.log("ml5 version:", ml5.version);
 
-let moveX = 1;
-let moveY = 0;
 let cellSize = 16;
-let food;
 let snakes = [];
 let savedSnakes = [];
-let counter = 0;
-let foods = [];
 const TOTAL = 150;
-const FOOD_START_AMOUNT = 3;
 let generation = 1;
 let loaded = false;
 let highscore = 0;
@@ -22,8 +16,7 @@ function setup() {
   createCanvas(400, 400);
   // Improves performance for small neural networks and classifySync()
   ml5.tf.setBackend("cpu");
-  // frameRate(6);
-  spawnFood();
+  // frameRate(10);
 
   let snake = new Snake();
   const modelDetails = {
@@ -40,6 +33,7 @@ function setup() {
   //})
   // .catch(error => console.error(error));
 
+  // frameRate(10);
   // Slider for speeding up simulation
   slider = createSlider(1, MAX_ROUND_FRAMES, 1);
   slider.position(10, 420);
@@ -52,22 +46,19 @@ function draw() {
       count++;
       // Time exceeded
       if (count >= MAX_ROUND_FRAMES) {
-        console.log('Time is up');
+        console.log("Time is up");
         count = 0;
         saveRemainingSnakes();
       }
       updateSnakes();
       // No survivors go to the next generation
       if (snakes.length === 0) {
-        counter = 0;
         nextGeneration();
       }
-      spawnSingleFood();
 
       // drawing
       background(220);
       drawGrid();
-      drawFood();
       drawSnakes();
       fill(0, 0, 0);
       textSize(25);
@@ -116,13 +107,6 @@ function drawSnakes() {
   });
 }
 
-function drawFood() {
-  fill(0, 255, 0);
-  foods.forEach((food) => {
-    rect(food.x * cellSize, food.y * cellSize, cellSize, cellSize);
-  });
-}
-
 function updateSnakes() {
   for (let i = 0; i < snakes.length; i++) {
     let snake = snakes[i];
@@ -144,29 +128,9 @@ function saveRemainingSnakes() {
   }
 }
 
-function spawnFood() {
-  foods = [];
-  for (let i = 0; i < FOOD_START_AMOUNT; i++) {
-    foods.push({
-      x: floor(random(width) / cellSize),
-      y: floor(random(width) / cellSize),
-    });
-  }
-}
-
-function spawnSingleFood() {
-  while (foods.length < FOOD_START_AMOUNT) {
-    foods.push({
-      x: floor(random(width) / cellSize),
-      y: floor(random(width) / cellSize),
-    });
-  }
-}
-
 function reset() {
   console.log("Died!");
   snakeSize = 1;
-  spawnFood();
   tail = [];
   tail.push({
     x: floor(width / cellSize / 2),

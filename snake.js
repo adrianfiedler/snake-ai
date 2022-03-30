@@ -16,6 +16,7 @@ class Snake {
       g: Math.random() * 255,
       b: Math.random() * 255,
     };
+    this.food = this.spawnSingleFood();
 
     if (brain) {
       this.brain = brain;
@@ -37,17 +38,17 @@ class Snake {
         debug: true,
         task: "classification",
         noTraining: true,
-        layers:[
+        layers: [
           {
             type: 'dense',
-            units: 64,
+            units: 16,
             activation: 'relu',
           },
           {
             type: 'dense',
-            activation: 'softmax',
+            activation: 'sigmoid',
           },
-        ]
+        ],
       };
       this.brain = ml5.neuralNetwork(options);
     }
@@ -55,6 +56,8 @@ class Snake {
 
   show() {
     fill(this.color.r, this.color.g, this.color.b);
+    ellipseMode(CORNER);
+    circle(this.food.x * cellSize, this.food.y * cellSize, cellSize);
     for (let i = 0; i < this.tail.length; i++) {
       rect(
         this.tail[i].x * cellSize,
@@ -66,16 +69,12 @@ class Snake {
   }
 
   update() {
-    // console.log(this.tail[0].x, this.tail[0].y);
     this.score++;
-    for (let i = 0; i < foods.length; i++) {
-      let food = foods[i];
-      if (this.tail[0].x == food.x && this.tail[0].y == food.y) {
-        this.size++;
-        foods.splice(i, 1);
-        spawnSingleFood();
-        this.score += 500;
-      }
+    let food = this.food;
+    if (this.tail[0].x == food.x && this.tail[0].y == food.y) {
+      this.size++;
+      this.food = this.spawnSingleFood();
+      this.score += 500;
     }
     this.tail.unshift({
       x: this.tail[0].x + this.moveX,
@@ -116,21 +115,20 @@ class Snake {
   think() {
     const inputs = [0, 0, 0, 0, 0, 0, 0, 0, 0];
     let head = this.tail[0];
-    foods.forEach((food) => {
-      if (food.y == head.y && food.x == head.x - 1) {
-        // food left
-        inputs[0] = 1;
-      } else if (food.y == head.y && food.x == head.x + 1) {
-        // food right
-        inputs[1] = 1;
-      } else if (food.x == head.x && food.y == head.y - 1) {
-        // food top
-        inputs[2] = 1;
-      } else if (food.x == head.x && food.y == head.y + 1) {
-        // food bottom
-        inputs[3] = 1;
-      }
-    });
+    let food = this.food;
+    if (food.y == head.y && food.x == head.x - 1) {
+      // food left
+      inputs[0] = 1;
+    } else if (food.y == head.y && food.x == head.x + 1) {
+      // food right
+      inputs[1] = 1;
+    } else if (food.x == head.x && food.y == head.y - 1) {
+      // food top
+      inputs[2] = 1;
+    } else if (food.x == head.x && food.y == head.y + 1) {
+      // food bottom
+      inputs[3] = 1;
+    }
     if (head.x == 0 || this.checkTailAdjacent("left")) {
       // wall or tail left?
       inputs[4] = 1;
@@ -147,12 +145,11 @@ class Snake {
       // wall or tail bottom?
       inputs[7] = 1;
     }
-    let closestFood = this.getClosestFood();
+    let closestFood = this.food;
     // Angle between closest food and head
-    let headV = createVector(head.x, head.y);
+    let headV = createVector(this.moveX, this.moveY);
     let foodV = createVector(closestFood.x, closestFood.y);
     inputs[8] = this.getAngle(headV, foodV);
-    // console.log(angleBetween);
     // this.printInputs(inputs);
     const results = this.brain.classifySync(inputs);
     // console.log(results);
@@ -193,11 +190,15 @@ class Snake {
   }
 
   printInputs(inputs) {
-    console.log(`food:{ left:${inputs[0]}, right: ${inputs[1]}, top: ${inputs[2]}, bottom: ${inputs[3]} }`);
+    /*
+    console.log(
+      `food:{ left:${inputs[0]}, right: ${inputs[1]}, top: ${inputs[2]}, bottom: ${inputs[3]} }`
+    );
     console.log(
       `wall:{ left:${inputs[4]}, right: ${inputs[5]}, top: ${inputs[6]}, bottom: ${inputs[7]} }`
     );
-    console.log('angle: ' + inputs[8]);
+    */
+    console.log("angle: " + inputs[8]);
   }
 
   checkLastMoves(newMove) {
@@ -256,23 +257,18 @@ class Snake {
     return false;
   }
 
-  getClosestFood() {
-    let minDist = Infinity;
-    let closest;
-    for (let i = 0; i < foods.length; i++) {
-      let food = foods[i];
-      let currDist = dist(this.tail[0].x, this.tail[0].y, food.x, food.y);
-      if (currDist < minDist) {
-        minDist = currDist;
-        closest = food;
-      }
-    }
-    return closest;
+  getAngle() {
+    let head = this.tail[0];
+    let vectToFood = createVector(this.food.x - head.x, this.food.y - head.y);
+    let dir = createVector(this.moveX, this.moveY);
+    // 1: in front, 0: behind
+    return 1 - abs(degrees(vectToFood.angleBetween(dir)) / 180);
   }
 
-  getAngle(p1, p2) {
-    // angle in degrees
-    let angleDegrees =Math.atan2(p2.y - p1.y, p2.x - p1.x) * 180 / Math.PI;
-    return angleDegrees / 180;
+  spawnSingleFood() {
+    return {
+      x: floor(random(width) / cellSize),
+      y: floor(random(width) / cellSize),
+    };
   }
 }

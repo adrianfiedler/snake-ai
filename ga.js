@@ -21,7 +21,6 @@ function nextGeneration() {
   }
   // Clear the array
   savedSnakes = [];
-  spawnFood();
   generation++;
 }
 
